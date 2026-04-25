@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+/* Isso garante que mesmo se o tailwind falhar, o fundo fique dark */
+:root {
+  background-color: #050505;
+  color: white;
+}
+/* Estilização para o texto da IA ficar limpo e espaçado */
+.prose strong {
+  color: #eab308; /* Amarelo Vitta para os negritos */
+  font-weight: 800;
+}
+
+.prose p {
+  margin-bottom: 0.75rem;
+}
+
+.prose ul {
+  list-style-type: disc;
+  margin-left: 1rem;
+}
