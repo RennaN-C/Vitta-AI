@@ -3,7 +3,7 @@ import axios from "axios";
 import { Lock, Mail, UserPlus, LogIn, RefreshCw, AlertCircle, TrendingUp } from "lucide-react";
 import vittaBg from "../assets/vitta_bg.png"; 
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "100.48.58.153:8000";
 
 const Login = ({ onLogin }) => {
   const [abaAtiva, setAbaAtiva] = useState("login");

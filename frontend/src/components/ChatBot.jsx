@@ -3,7 +3,7 @@ import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import { Send, MessageSquare, Minus, Bot, Sparkles } from "lucide-react";
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "100.48.58.153:8000";
 
 const ChatBot = () => {
   const [chatAberto, setChatAberto] = useState(false);
