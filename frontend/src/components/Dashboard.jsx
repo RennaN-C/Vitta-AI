@@ -21,7 +21,6 @@ const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
     
     setLoading(true);
     
-    // Segurança para evitar o erro de "setTelaAtiva is not a function"
     if (setTelaAtiva && typeof setTelaAtiva === "function") {
       setTelaAtiva("analisar");
     }
@@ -167,7 +166,7 @@ const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
           </div>
         )}
 
-        {/* --- TELA DE PERFIL (A NOVA PEÇA) --- */}
+        {/* --- TELA DE PERFIL  --- */}
         {telaAtiva === "perfil" && (
           <Profile usuario={usuario} />
         )}

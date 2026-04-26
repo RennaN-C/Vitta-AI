@@ -2,8 +2,7 @@ import React from "react";
 import { User, Mail, Building2, ShieldCheck, LogOut, Settings, Award } from "lucide-react";
 
 const Profile = ({ usuario }) => {
-  // Caso não tenha usuário logado (fallback)
-  const user = usuario || { nome: "Rennan", email: "rennan@pormade.com.br", empresa: "Pormade Portas" };
+  const user = usuario || { nome: "Rennan", email: "rennanoliveiracardoso@gmail.com", empresa: "Pormade Portas" };
 
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in zoom-in-95 duration-700">

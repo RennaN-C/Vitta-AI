@@ -11,7 +11,7 @@ const Sidebar = ({ usuario, telaAtiva, setTelaAtiva, onLogout }) => {
   return (
     <aside className="w-20 lg:w-72 border-r border-white/5 flex flex-col bg-[#080808] z-50 h-screen transition-all duration-300">
       
-      {/* Logo Vitta AI */}
+      {}
       <div className="p-8 mb-6 flex items-center gap-4">
         <div className="bg-yellow-500 p-2 rounded-xl shrink-0 shadow-lg shadow-yellow-500/20">
           <BrainCircuit className="text-black" size={24} />
@@ -56,7 +56,7 @@ const Sidebar = ({ usuario, telaAtiva, setTelaAtiva, onLogout }) => {
       {/* Perfil e Sair */}
       <div className="p-6 border-t border-white/5">
         
-        {/* BOTÃO DO PERFIL - AGORA COM CLICK */}
+        {/* BOTÃO DO PERFIL  */}
         <button 
           onClick={() => setTelaAtiva("perfil")}
           className={`w-full hidden lg:flex items-center gap-3 p-3 rounded-2xl border mb-4 group transition-all ${
@@ -83,7 +83,7 @@ const Sidebar = ({ usuario, telaAtiva, setTelaAtiva, onLogout }) => {
 
         {/* BOTÃO DESCONECTAR */}
         <button
-          onClick={() => onLogout()} // Chama a função que vem do App.jsx
+          onClick={() => onLogout()} 
           className="w-full flex items-center gap-4 p-4 text-red-500/70 hover:text-red-500 hover:bg-red-500/10 rounded-2xl transition-all"
         >
           <LogOut size={22} />

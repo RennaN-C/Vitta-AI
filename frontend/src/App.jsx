@@ -26,9 +26,7 @@ function App() {
     setTelaAtiva("home");
   };
 
-  // Se não houver usuário, renderiza o Login
   if (!usuario) {
-    // 3. AGORA A PROP "onLogin" BATE COM O LOGIN.JSX
     return <Login onLogin={handleLogin} />;
   }
 

@@ -5,7 +5,7 @@ import vittaBg from "../assets/vitta_bg.png";
 
 const API_URL = "http://127.0.0.1:8000";
 
-const Login = ({ onLogin }) => { // 1. Nome sincronizado com o App.jsx
+const Login = ({ onLogin }) => {
   const [abaAtiva, setAbaAtiva] = useState("login");
   const [loading, setLoading] = useState(false);
   const [servidorStatus, setServidorStatus] = useState("online");
@@ -26,7 +26,6 @@ const Login = ({ onLogin }) => { // 1. Nome sincronizado com o App.jsx
       const res = await axios.post(`${API_URL}${rota}`, payload);
       
       if (abaAtiva === "login") {
-        // 2. Corrigido para "success" (como vem do seu Python)
         if (res.data.status === "success" || res.status === 200) {
           onLogin(res.data.usuario);
         }

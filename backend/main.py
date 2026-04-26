@@ -73,7 +73,7 @@ async def analisar_acao(ticker: str):
         print(f"Erro: {e}")
         raise HTTPException(status_code=500, detail="Erro ao processar dados reais.")
 
-# --- CHAT IA (VERSÃO ESTÁVEL) ---
+# --- CHAT IA ---
 @app.post("/chat")
 async def chat_vitta(dados: dict = Body(...)):
     from groq import Groq
@@ -89,7 +89,6 @@ async def chat_vitta(dados: dict = Body(...)):
         client = Groq(api_key=api_key)
         
         completion = client.chat.completions.create(
-            # MODELO ATUALIZADO (Llama 3.3 é o estado da arte na Groq agora)
             model="llama-3.3-70b-versatile", 
             messages=[
                 {
@@ -110,8 +109,6 @@ async def chat_vitta(dados: dict = Body(...)):
     except Exception as e:
         error_msg = str(e)
         print(f"❌ ERRO REAL NA GROQ: {error_msg}")
-        
-        # Se der erro de modelo de novo, usamos o 3.1 8b que é o "coringa"
         if "model_decommissioned" in error_msg or "400" in error_msg:
              return {"resposta": "O motor de análise está sendo atualizado para a versão 3.3. Por favor, tente novamente em 5 segundos."}
              
@@ -120,42 +117,29 @@ async def chat_vitta(dados: dict = Body(...)):
 
 @app.post("/auth/login")
 async def login(dados: dict = Body(...)):
-    # 1. Pegamos os dados que você digitou no Frontend
     identificador = dados.get("email", "").strip() 
-    senha_input = dados.get("senha")
-    
+    senha_input = dados.get("senha")   
     user = None
-
-    # 2. TENTATIVA 1: Buscar na tabela 'users'
     try:
         query_users = "SELECT * FROM users WHERE email = :id AND senha = :senha"
         user = await database.fetch_one(query=query_users, values={"id": identificador, "senha": senha_input})
     except Exception:
-        # Se a tabela 'users' não existir, o Python ignora o erro e tenta a próxima
         pass
 
-    # 3. TENTATIVA 2: Se não achou na primeira, busca na 'usuarios'
     if not user:
         try:
             query_usuarios = "SELECT * FROM usuarios WHERE email = :id AND senha = :senha"
             user = await database.fetch_one(query=query_usuarios, values={"id": identificador, "senha": senha_input})
         except Exception as e:
-            # Se nenhuma das duas tabelas existir, ele avisa no terminal
             print(f"❌ Erro crítico: Nenhuma tabela (users ou usuarios) foi encontrada no Neon. Erro: {e}")
             raise HTTPException(status_code=500, detail="Banco de dados não configurado corretamente.")
-
-    # 4. RESPOSTA FINAL
-    # FORMA CORRETA DE ACESSAR OS DADOS DO OBJETO 'RECORD'
     if user:
         return {
             "status": "success",
             "usuario": {
             "nome": user["nome"],
             "email": user["email"],
-            # Verificamos se a coluna existe no banco, se não, usamos o padrão
             "empresa": user["empresa"] if "empresa" in user._mapping else "Pormade Portas"
         }
     }
-    
-    # Se chegou aqui, as tabelas existem mas a senha ou email estão errados
     raise HTTPException(status_code=401, detail="E-mail ou senha incorretos.")
