@@ -25,6 +25,8 @@ Vitta-AI/
 │   │   │   └── Dashboard.jsx # Visualização de dados de mercado
 │   └── Dockerfile       # Configuração da imagem Vite/React
 └── docker-compose.yml   # Orquestração completa dos serviços
+
+
 🚀 Tecnologias Utilizadas
 Frontend: React.js, Tailwind CSS, Lucide React (Icons), Vite.
 
@@ -50,6 +52,7 @@ Crie um arquivo .env na raiz do projeto ou dentro da pasta backend/:
 Snippet de código
 DATABASE_URL=sua_url_do_neon
 GROQ_API_KEY=sua_chave_groq
+
 3. Executando o Sistema
 No terminal, na raiz do projeto, execute:
 
@@ -62,6 +65,7 @@ Frontend: http://localhost:5173
 Backend (Docs): http://localhost:8000/docs
 
 🔄 Fluxo de Uso
+
 Registro/Login: Crie uma conta no terminal. O sistema gera automaticamente um UUID único para sua segurança.
 
 Análise de Ativos: No Dashboard, digite um ticker (ex: PETR4 ou AAPL) para obter dados em tempo real.
@@ -71,6 +75,7 @@ Chatbot IA: Abra o terminal de análise no canto inferior. Suas dúvidas técnic
 Persistência: Ao deslogar e entrar novamente, suas conversas anteriores serão carregadas do banco de dados para o chat.
 
 🔐 Diferenciais Técnicos Implementados
+
 UUID (Universally Unique Identifier): Substituição de IDs sequenciais por UUIDs para evitar exposição de dados.
 
 Foreign Key Integrity: Relacionamentos sólidos entre tabelas de usuário, credenciais e histórico.
