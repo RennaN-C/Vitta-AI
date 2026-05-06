@@ -1,9 +1,17 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Lock, Mail, UserPlus, LogIn, RefreshCw, AlertCircle, TrendingUp } from "lucide-react";
-import vittaBg from "../assets/vitta_bg.png"; 
+import {
+  Lock,
+  Mail,
+  UserPlus,
+  LogIn,
+  RefreshCw,
+  AlertCircle,
+  TrendingUp,
+} from "lucide-react";
+import vittaBg from "../assets/vitta_bg.png";
 
-const API_URL = "100.48.58.153:8000";
+const API_URL = "http://localhost:8000";
 
 const Login = ({ onLogin }) => {
   const [abaAtiva, setAbaAtiva] = useState("login");
@@ -24,28 +32,35 @@ const Login = ({ onLogin }) => {
 
     try {
       const res = await axios.post(`${API_URL}${rota}`, payload);
-      
+
       if (abaAtiva === "login") {
-        if (res.data.status === "success" || res.status === 200) {
-          onLogin(res.data.usuario);
+        if (res.status === 200 && res.data.usuario) {
+          // Acessamos res.data.usuario porque é assim que o auth.py envia
+          const dadosUsuario = {
+            id: String(res.data.usuario.id), 
+            nome: res.data.usuario.nome,
+            email: res.data.usuario.email
+          };
+
+          // Salva no navegador antes de mudar de tela
+          localStorage.setItem("usuario", JSON.stringify(dadosUsuario));
+
+          if (onLogin) onLogin(dadosUsuario);
         }
       } else {
-        alert("✅ Conta criada com sucesso! Faça login agora.");
+        alert("✅ Conta criada com sucesso!");
         setAbaAtiva("login");
       }
     } catch (err) {
-      if (!err.response) {
-        setServidorStatus("offline");
-      } else {
-        alert(err.response.data.detail || "Erro na autenticação.");
-      }
+      if (!err.response) setServidorStatus("offline");
+      else alert(err.response.data.detail || "Erro na autenticação.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div 
+    <div
       className="min-h-screen w-full flex items-center justify-center p-6 relative overflow-hidden bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${vittaBg})` }}
     >
@@ -53,29 +68,37 @@ const Login = ({ onLogin }) => {
 
       <div className="w-full max-w-md bg-[#0a0a0a]/90 border border-white/10 p-10 rounded-[3rem] shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-xl">
         <div className="flex flex-col items-center mb-8">
-            <div className="bg-gradient-to-br from-yellow-400 to-yellow-600 p-4 rounded-2xl -rotate-6 shadow-[0_10px_30px_rgba(234,179,8,0.3)] mb-4 border border-yellow-300/20">
-                <TrendingUp className="text-black" size={36} strokeWidth={3} />
-            </div>
-          
+          <div className="bg-gradient-to-br from-yellow-400 to-yellow-600 p-4 rounded-2xl -rotate-6 shadow-[0_10px_30px_rgba(234,179,8,0.3)] mb-4 border border-yellow-300/20">
+            <TrendingUp className="text-black" size={36} strokeWidth={3} />
+          </div>
+
           <h1 className="text-4xl font-black uppercase italic tracking-tighter text-white">
             Vitta <span className="text-yellow-500 font-serif">AI</span>
           </h1>
           <p className="text-[9px] font-black text-gray-500 tracking-[0.4em] uppercase mt-1">
             Trading Terminal
           </p>
-          
+
           <div className="flex gap-8 mt-10">
-            <button 
+            <button
               type="button"
               onClick={() => setAbaAtiva("login")}
-              className={`text-[10px] font-black uppercase tracking-widest pb-2 border-b-2 transition-all ${abaAtiva === 'login' ? 'border-yellow-500 text-white' : 'border-transparent text-gray-600 hover:text-gray-400'}`}
+              className={`text-[10px] font-black uppercase tracking-widest pb-2 border-b-2 transition-all ${
+                abaAtiva === "login"
+                  ? "border-yellow-500 text-white"
+                  : "border-transparent text-gray-600 hover:text-gray-400"
+              }`}
             >
               Acessar
             </button>
-            <button 
+            <button
               type="button"
               onClick={() => setAbaAtiva("cadastro")}
-              className={`text-[10px] font-black uppercase tracking-widest pb-2 border-b-2 transition-all ${abaAtiva === 'cadastro' ? 'border-yellow-500 text-white' : 'border-transparent text-gray-600 hover:text-gray-400'}`}
+              className={`text-[10px] font-black uppercase tracking-widest pb-2 border-b-2 transition-all ${
+                abaAtiva === "cadastro"
+                  ? "border-yellow-500 text-white"
+                  : "border-transparent text-gray-600 hover:text-gray-400"
+              }`}
             >
               Registrar
             </button>
@@ -118,23 +141,38 @@ const Login = ({ onLogin }) => {
             <Lock className="absolute right-6 top-4 text-gray-600" size={18} />
           </div>
 
-          <button 
+          <button
             type="submit"
             disabled={loading}
             className={`w-full flex items-center justify-center gap-3 py-5 rounded-2xl uppercase tracking-widest text-xs font-black transition-all shadow-lg active:scale-95 ${
-              servidorStatus === 'offline' 
-              ? 'bg-red-500/20 text-red-500 border border-red-500/50' 
-              : 'bg-yellow-500 text-black hover:bg-yellow-400'
+              servidorStatus === "offline"
+                ? "bg-red-500/20 text-red-500 border border-red-500/50"
+                : "bg-yellow-500 text-black hover:bg-yellow-400"
             }`}
           >
-            {loading ? <RefreshCw className="animate-spin" size={18} /> : 
-             servidorStatus === 'offline' ? <><AlertCircle size={18} /> Servidor Offline</> :
-             abaAtiva === 'login' ? <><LogIn size={18} /> Entrar no Terminal</> : <><UserPlus size={18} /> Ativar Conta</>}
+            {loading ? (
+              <RefreshCw className="animate-spin" size={18} />
+            ) : servidorStatus === "offline" ? (
+              <>
+                <AlertCircle size={18} /> Servidor Offline
+              </>
+            ) : abaAtiva === "login" ? (
+              <>
+                <LogIn size={18} /> Entrar no Terminal
+              </>
+            ) : (
+              <>
+                <UserPlus size={18} /> Ativar Conta
+              </>
+            )}
           </button>
         </form>
 
         <div className="mt-10 text-center">
-          <button type="button" className="text-[9px] text-gray-600 hover:text-yellow-500 uppercase font-black tracking-widest transition-colors">
+          <button
+            type="button"
+            className="text-[9px] text-gray-600 hover:text-yellow-500 uppercase font-black tracking-widest transition-colors"
+          >
             Esqueceu sua chave de acesso?
           </button>
         </div>

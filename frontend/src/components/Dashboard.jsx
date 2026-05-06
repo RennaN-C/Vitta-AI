@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import Profile from "./Profile";
 
-const API_URL = "100.48.58.153:8000";
+const API_URL = "http://localhost:8000";
 
 const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
   const [busca, setBusca] = useState("");
@@ -139,7 +139,7 @@ const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
           <div className="max-w-6xl mx-auto animate-in slide-in-from-right-10 duration-700">
             <div className="mb-10 flex items-center justify-between">
               <h2 className="text-3xl font-black italic uppercase text-white tracking-tighter">
-                Market <span className="text-yellow-500">Scanner</span>
+                Analisador <span className="text-yellow-500">de Mercado</span>
               </h2>
               {resultadoAcao && (
                 <button

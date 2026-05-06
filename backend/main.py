@@ -1,20 +1,16 @@
 import os
 import yfinance as yf
-import sqlalchemy
-from fastapi import FastAPI, Body, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from databases import Database
-from sqlalchemy import create_engine, MetaData, Table, Column, String, Integer
-from dotenv import load_dotenv
 from deep_translator import GoogleTranslator
-import google.generativeai as genai
 
-# --- CONFIGURAÇÃO ---
-load_dotenv()
-DATABASE_URL = os.getenv("DATABASE_URL")
+# Importações dos nossos novos módulos
+from database import database
+import auth
+import chatbot
+
 app = FastAPI(title="Vitta AI Backend")
 
-# --- CORS (ESSENCIAL PARA O REACT) ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -22,21 +18,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-database = Database(DATABASE_URL)
-
 @app.on_event("startup")
 async def startup():
+  
     await database.connect()
 
 @app.on_event("shutdown")
 async def shutdown():
     await database.disconnect()
 
-# --- ANÁLISE REAL DE MERCADO ---
+
+app.include_router(auth.router)
+app.include_router(chatbot.router)
+
+
 @app.get("/analisar/{ticker}")
 async def analisar_acao(ticker: str):
     try:
         simbolo = ticker.upper()
+        
+       
         if not simbolo.endswith(".SA") and len(simbolo) <= 6:
             if not any(c in simbolo for c in ["BTC", "ETH"]):
                 simbolo += ".SA"
@@ -51,7 +52,6 @@ async def analisar_acao(ticker: str):
         fechamento_anterior = info.get('regularMarketPreviousClose', preco_atual)
         variacao = ((preco_atual - fechamento_anterior) / fechamento_anterior) * 100
 
-        # Tradutor para Português
         translator = GoogleTranslator(source='en', target='pt')
         setor_en = info.get('sector', 'N/A')
         resumo_en = info.get('longBusinessSummary', 'Sem resumo disponível.')
@@ -70,76 +70,10 @@ async def analisar_acao(ticker: str):
             "resumo": resumo_pt
         }
     except Exception as e:
-        print(f"Erro: {e}")
-        raise HTTPException(status_code=500, detail="Erro ao processar dados reais.")
+        print(f"❌ Erro na análise: {e}")
+        raise HTTPException(status_code=500, detail="Erro ao processar dados reais do mercado.")
 
-# --- CHAT IA ---
-@app.post("/chat")
-async def chat_vitta(dados: dict = Body(...)):
-    from groq import Groq
-    import os
+if __name__ == "__main__":
+    import uvicorn
     
-    api_key = os.getenv("GROQ_API_KEY")
-    mensagem_usuario = dados.get("mensagem")
-
-    if not api_key:
-        return {"resposta": "⚠️ Terminal Offline: Chave Groq não configurada."}
-
-    try:
-        client = Groq(api_key=api_key)
-        
-        completion = client.chat.completions.create(
-            model="llama-3.3-70b-versatile", 
-            messages=[
-                {
-                    "role": "system",
-                    "content": "Você é o analista sênior do Terminal Vitta AI. Responda em português brasileiro, de forma curta, técnica e profissional. Foco em mercado financeiro e ações."
-                },
-                {
-                    "role": "user",
-                    "content": mensagem_usuario
-                }
-            ],
-            temperature=0.5,
-            max_tokens=1000,
-        )
-        
-        return {"resposta": completion.choices[0].message.content}
-
-    except Exception as e:
-        error_msg = str(e)
-        print(f"❌ ERRO REAL NA GROQ: {error_msg}")
-        if "model_decommissioned" in error_msg or "400" in error_msg:
-             return {"resposta": "O motor de análise está sendo atualizado para a versão 3.3. Por favor, tente novamente em 5 segundos."}
-             
-        return {"resposta": "O motor de inteligência Vitta está em manutenção momentânea."}
-
-
-@app.post("/auth/login")
-async def login(dados: dict = Body(...)):
-    identificador = dados.get("email", "").strip() 
-    senha_input = dados.get("senha")   
-    user = None
-    try:
-        query_users = "SELECT * FROM users WHERE email = :id AND senha = :senha"
-        user = await database.fetch_one(query=query_users, values={"id": identificador, "senha": senha_input})
-    except Exception:
-        pass
-
-    if not user:
-        try:
-            query_usuarios = "SELECT * FROM usuarios WHERE email = :id AND senha = :senha"
-            user = await database.fetch_one(query=query_usuarios, values={"id": identificador, "senha": senha_input})
-        except Exception as e:
-            print(f"❌ Erro crítico: Nenhuma tabela (users ou usuarios) foi encontrada no Neon. Erro: {e}")
-            raise HTTPException(status_code=500, detail="Banco de dados não configurado corretamente.")
-    if user:
-        return {
-            "status": "success",
-            "usuario": {
-            "nome": user["nome"],
-            "email": user["email"],
-            "empresa": user["empresa"] if "empresa" in user._mapping else "Pormade Portas"
-        }
-    }
-    raise HTTPException(status_code=401, detail="E-mail ou senha incorretos.")
+    uvicorn.run(app, host="0.0.0.0", port=8000)

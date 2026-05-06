@@ -3,7 +3,7 @@ import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import { Send, MessageSquare, Minus, Bot, Sparkles } from "lucide-react";
 
-const API_URL = "100.48.58.153:8000";
+const API_URL = "http://localhost:8000";
 
 const ChatBot = () => {
   const [chatAberto, setChatAberto] = useState(false);
@@ -17,33 +17,40 @@ const ChatBot = () => {
   ]);
 
   const scrollRef = useRef(null);
+
+  // Auto-scroll para a última mensagem
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [mensagens]);
+    if (chatAberto) {
+      scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [mensagens, chatAberto]);
 
   const enviarMensagem = async () => {
-    if (!pergunta.trim() || enviando) return;
+    const usuarioStored = localStorage.getItem("usuario");
+    const usuarioLogado = usuarioStored ? JSON.parse(usuarioStored) : null;
+
+    // Se o ID não existir no localStorage, barra aqui
+    if (!usuarioLogado?.id) {
+        setMensagens(prev => [...prev, { role: "model", parts: [{ text: "⚠️ **Sessão expirada.** Por favor, faça login novamente." }] }]);
+        return;
+    }
 
     const textoUsuario = pergunta;
     setPergunta("");
-    setMensagens((prev) => [...prev, { role: "user", parts: [{ text: textoUsuario }] }]);
+    setMensagens(prev => [...prev, { role: "user", parts: [{ text: textoUsuario }] }]);
     setEnviando(true);
 
     try {
-      const res = await axios.post(`${API_URL}/chat`, { mensagem: textoUsuario });
+        // user_id vai como STRING pura para o backend
+        const res = await axios.post(`${API_URL}/chat`, { 
+            user_id: String(usuarioLogado.id), 
+            mensagem: textoUsuario 
+        });
       
-      const respostaIA = res.data.resposta || "Instabilidade momentânea. Por favor, repita a pergunta.";
-
-      setMensagens((prev) => [
-        ...prev,
-        { role: "model", parts: [{ text: respostaIA }] },
-      ]);
+      const respostaIA = res.data.resposta || "Instabilidade no motor Vitta.";
+      setMensagens(prev => [...prev, { role: "model", parts: [{ text: respostaIA }] }]);
     } catch (err) {
-      console.error("Erro ocultado:", err);
-      setMensagens((prev) => [
-        ...prev,
-        { role: "model", parts: [{ text: "O terminal Vitta AI está passando por uma atualização de segurança. Tente novamente em alguns instantes." }] },
-      ]);
+      console.error("Erro no Terminal:", err);
     } finally {
       setEnviando(false);
     }
@@ -61,15 +68,17 @@ const ChatBot = () => {
       ) : (
         <div className="w-[380px] md:w-[450px] h-[600px] bg-[#0c0c0c] border border-white/10 rounded-[3rem] shadow-[0_40px_100px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 border-b-yellow-500 border-b-[12px]">
           
+          {/* Header */}
           <div className="p-8 bg-yellow-500 text-black flex justify-between items-center">
             <div className="flex items-center gap-4 font-black text-[10px] uppercase tracking-tighter italic">
               <Bot size={22} /> <span>Vitta Analyst v5.0</span>
             </div>
-            <button onClick={() => setChatAberto(false)} className="hover:bg-black/10 p-2 rounded-full">
+            <button onClick={() => setChatAberto(false)} className="hover:bg-black/10 p-2 rounded-full transition-colors">
               <Minus size={28} />
             </button>
           </div>
 
+          {/* Chat Messages */}
           <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-[#0c0c0c] scrollbar-hide">
             {mensagens.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -92,9 +101,10 @@ const ChatBot = () => {
             <div ref={scrollRef} />
           </div>
 
+          {/* Input Area */}
           <div className="p-8 bg-[#080808] border-t border-white/5 flex gap-4">
             <input
-              className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xs text-white outline-none focus:border-yellow-500/50 font-medium"
+              className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xs text-white outline-none focus:border-yellow-500/50 font-medium transition-all"
               placeholder="Digite sua dúvida financeira..."
               value={pergunta}
               onChange={(e) => setPergunta(e.target.value)}
@@ -103,7 +113,9 @@ const ChatBot = () => {
             <button
               onClick={enviarMensagem}
               disabled={enviando}
-              className="bg-yellow-500 text-black p-5 rounded-2xl hover:bg-yellow-400 active:scale-90 transition-all shadow-xl"
+              className={`bg-yellow-500 text-black p-5 rounded-2xl transition-all shadow-xl ${
+                enviando ? "opacity-50 grayscale cursor-not-allowed" : "hover:bg-yellow-400 active:scale-90"
+              }`}
             >
               <Send size={22} />
             </button>
