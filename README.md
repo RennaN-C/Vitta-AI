@@ -1,129 +1,85 @@
-# 📊 Vitta AI - Trading Terminal
+# 💹 Vitta AI - Trading Terminal & Analyst
 
-Sistema desenvolvido para auxiliar usuários na análise do mercado de ações de forma simples, interativa e personalizada, utilizando inteligência artificial para transformar dados financeiros complexos em informações claras e compreensíveis.
-
----
-
-## 🚀 Sobre o Projeto
-
-A proposta da plataforma é atuar como um **assistente inteligente de investimento**, permitindo que usuários — mesmo sem conhecimento técnico — consigam:
-
-* Analisar ações de forma simplificada
-* Comparar ativos com suporte de IA
-* Simular investimentos
-* Receber interpretações em linguagem natural
-* Tomar decisões mais informadas
-
-Diferente de plataformas tradicionais, o sistema não apenas exibe dados, mas **interpreta e explica o mercado**.
-
----
-
-## 🧠 Principais Funcionalidades
-
-### 🔎 Análise de Ações
-
-* Busca de ativos (ex: PETR4.SA)
-* Visualização de gráfico histórico
-* Interpretação automática da tendência (alta, baixa ou estabilidade)
-
-### ⚖️ Comparador de Ações
-
-* Comparação entre múltiplos ativos
-* Análise lado a lado
-* Conclusão inteligente destacando pontos fortes e fracos
-
-### 💰 Simulador de Investimentos
-
-* Simulação baseada em dados históricos
-* Cálculo de rendimento estimado
-* Apoio na compreensão de retorno e risco
-
-### 📊 Dashboard Inteligente
-
-* Visão geral do mercado
-* Indicadores principais
-* Resumo automatizado com insights
-
-### 📜 Histórico do Usuário *(em desenvolvimento)*
-
-* Registro de análises e simulações
-* Base para personalização futura
-
-### 🚨 Alertas Inteligentes *(em desenvolvimento)*
-
-* Notificações baseadas em preço ou variação
-* Monitoramento automático de ativos
-
----
-
-## 🛠️ Tecnologias Utilizadas
-
-* **Frontend:** React.js, Tailwind CSS, Lucide Icons.
-* **Backend:** Python 3.10+, FastAPI, Uvicorn.
-* **Banco de Dados:** Neon (Serverless PostgreSQL).
-* **IA/LLM:** Groq API (Llama 3).
-* **Estilização:** Dark Mode Extreme com acentos Gold/Neon.
+O **Vitta AI** é um terminal de inteligência financeira de alta performance, projetado para traders e investidores que buscam análises rápidas e técnicas de ativos do mercado financeiro. Utilizando o poder do modelo **Llama 3.3-70B via Groq**, o sistema fornece insights detalhados, enquanto o backend garante a persistência de todo o histórico de interações e autenticação robusta.
 
 ---
 
 ## 📂 Estrutura do Projeto
 
-```
-📁 projeto/
-│
-├── app.py              # Interface principal (Streamlit)
-├── data.py             # Coleta de dados financeiros
-├── analysis.py         # Lógica de análise de ações
-├── simulator.py        # Simulação de investimentos
-├── database.py         # Gerenciamento de dados (futuro)
-```
+A arquitetura do sistema é dividida em dois grandes blocos (Frontend e Backend), orquestrados via **Docker** para garantir que o ambiente de desenvolvimento seja idêntico ao de produção.
 
----
-
-## 💡 Objetivo Acadêmico
-
-Este projeto foi desenvolvido como parte de atividade acadêmica, com foco em:
-
-* Aplicação de inteligência artificial em finanças
-* Desenvolvimento de sistemas interativos
-* Experiência do usuário (UI/UX)
-* Análise e interpretação de dados
-
----
-
-## 🚀 Possíveis Evoluções
-
-* Integração com APIs reais de IA (ex: análise avançada)
-* Criação de perfil de investidor automático
-* Sistema de recomendação de ativos
-* Aplicativo mobile
-* Alertas em tempo real
-
----
-
-## ⚠️ Aviso
-
-Este sistema tem finalidade educacional e **não deve ser utilizado como recomendação financeira real**. As análises são baseadas em dados históricos e não garantem resultados futuros.
-
----
-
-## 👨‍💻 Autores
-
-* Marcelo Felipe da C. Barbusa
-* Marlon Myszka
-* Rennan de Oliveira Cardoso
-
----
-
-## 📌 Status do Projeto
-
-🚧 Em desenvolvimento
-
----
-
-## ⭐ Contribuição
-
-Sugestões e melhorias são bem-vindas!
-Sinta-se à vontade para abrir issues ou contribuir com o projeto.
+```text
+Vitta-AI/
+├── backend/
+│   ├── auth.py          # Gerenciamento de usuários e contas (UUID Logic)
+│   ├── chatbot.py       # Integração com Groq API e histórico no PostgreSQL
+│   ├── main.py          # Ponto de entrada FastAPI e análise de Tickers (yfinance)
+│   ├── database.py      # Configuração de conexão com o banco Neon
+│   ├── schemas.py       # Modelos de dados Pydantic (Validação de tipos)
+│   └── Dockerfile       # Configuração da imagem do servidor
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Login.jsx    # Sistema de autenticação (Persistent Storage)
+│   │   │   ├── ChatBot.jsx  # Interface de IA com histórico recuperável
+│   │   │   └── Dashboard.jsx # Visualização de dados de mercado
+│   └── Dockerfile       # Configuração da imagem Vite/React
+└── docker-compose.yml   # Orquestração completa dos serviços
 
 
+🚀 Tecnologias Utilizadas
+Frontend: React.js, Tailwind CSS, Lucide React (Icons), Vite.
+
+Backend: Python, FastAPI, Uvicorn.
+
+Inteligência Artificial: Groq Cloud SDK (Llama 3.3-70B).
+
+Banco de Dados: PostgreSQL (Hospedado no Neon.tech).
+
+Dados de Mercado: Yahoo Finance API (yfinance).
+
+DevOps: Docker, Docker Compose.
+
+🛠️ Como Utilizar o Sistema
+1. Requisitos
+Docker e Docker Compose instalados.
+
+Chaves de API: Groq API Key e Neon Database URL.
+
+2. Configuração de Variáveis de Ambiente
+Crie um arquivo .env na raiz do projeto ou dentro da pasta backend/:
+
+Snippet de código
+DATABASE_URL=sua_url_do_neon
+GROQ_API_KEY=sua_chave_groq
+
+3. Executando o Sistema
+No terminal, na raiz do projeto, execute:
+
+Bash
+docker compose up -d --build
+O sistema estará disponível em:
+
+Frontend: http://localhost:5173
+
+Backend (Docs): http://localhost:8000/docs
+
+🔄 Fluxo de Uso
+
+Registro/Login: Crie uma conta no terminal. O sistema gera automaticamente um UUID único para sua segurança.
+
+Análise de Ativos: No Dashboard, digite um ticker (ex: PETR4 ou AAPL) para obter dados em tempo real.
+
+Chatbot IA: Abra o terminal de análise no canto inferior. Suas dúvidas técnicas são respondidas pela IA e salvas automaticamente.
+
+Persistência: Ao deslogar e entrar novamente, suas conversas anteriores serão carregadas do banco de dados para o chat.
+
+🔐 Diferenciais Técnicos Implementados
+
+UUID (Universally Unique Identifier): Substituição de IDs sequenciais por UUIDs para evitar exposição de dados.
+
+Foreign Key Integrity: Relacionamentos sólidos entre tabelas de usuário, credenciais e histórico.
+
+CORS Seguro: Configuração de middleware para comunicação fluida entre React e FastAPI.
+
+Análise Técnica: Tradução automática de setores e resumos de empresas para Português Brasileiro.
