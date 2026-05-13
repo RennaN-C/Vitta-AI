@@ -1,128 +1,93 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
-import { Send, MessageSquare, Minus, Bot, Sparkles } from "lucide-react";
+import { Send, Bot, User } from "lucide-react";
 
 const API_URL = "http://localhost:8000";
 
-const ChatBot = () => {
-  const [chatAberto, setChatAberto] = useState(false);
+const ChatBot = ({ isFixed = false, tickerAtivo = "" }) => {
   const [pergunta, setPergunta] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [mensagens, setMensagens] = useState([
-    {
-      role: "model",
-      parts: [{ text: "Sistema **Vitta AI** online. Como posso auxiliar na sua estratégia de mercado hoje?" }],
-    },
+    { role: "model", text: `Analisando **${tickerAtivo || 'o mercado'}**...` }
   ]);
 
   const scrollRef = useRef(null);
+  useEffect(() => { scrollRef.current?.scrollIntoView({ behavior: "smooth" }); }, [mensagens]);
 
-  // Auto-scroll para a última mensagem
-  useEffect(() => {
-    if (chatAberto) {
-      scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [mensagens, chatAberto]);
-
+  /**
+   * PROCESSO DE CONVERSAÇÃO (LANGCHAIN):
+   * Envia o histórico de mensagens e o ID do usuário para o backend.
+   * O LangChain utiliza Memory (ConversationBufferWindowMemory) para manter 
+   * o contexto do diálogo e RAG (se implementado) para consultar dados externos.
+   */
   const enviarMensagem = async () => {
-    const usuarioStored = localStorage.getItem("usuario");
-    const usuarioLogado = usuarioStored ? JSON.parse(usuarioStored) : null;
+    if (!pergunta.trim() || enviando) return;
 
-    // Se o ID não existir no localStorage, barra aqui
-    if (!usuarioLogado?.id) {
-        setMensagens(prev => [...prev, { role: "model", parts: [{ text: "⚠️ **Sessão expirada.** Por favor, faça login novamente." }] }]);
-        return;
-    }
+    const usuarioStored = localStorage.getItem("vitta_user");
+    const user = usuarioStored ? JSON.parse(usuarioStored) : null;
 
-    const textoUsuario = pergunta;
+    const msgUser = pergunta;
     setPergunta("");
-    setMensagens(prev => [...prev, { role: "user", parts: [{ text: textoUsuario }] }]);
+    setMensagens(prev => [...prev, { role: "user", text: msgUser }]);
     setEnviando(true);
 
     try {
-        // user_id vai como STRING pura para o backend
-        const res = await axios.post(`${API_URL}/chat`, { 
-            user_id: String(usuarioLogado.id), 
-            mensagem: textoUsuario 
-        });
-      
-      const respostaIA = res.data.resposta || "Instabilidade no motor Vitta.";
-      setMensagens(prev => [...prev, { role: "model", parts: [{ text: respostaIA }] }]);
+      // POST para endpoint do LangChain que gerencia o fluxo de pensamento da IA
+      const res = await axios.post(`${API_URL}/chat`, { 
+        user_id: String(user?.id || "anonimo"), 
+        mensagem: tickerAtivo ? `Considere o ativo ${tickerAtivo}: ${msgUser}` : msgUser 
+      });
+      setMensagens(prev => [...prev, { role: "model", text: res.data.resposta }]);
     } catch (err) {
-      console.error("Erro no Terminal:", err);
+      setMensagens(prev => [...prev, { role: "model", text: "Erro na conexão com o LLM." }]);
     } finally {
       setEnviando(false);
     }
   };
 
   return (
-    <div className="fixed bottom-10 right-10 z-[100] font-sans">
-      {!chatAberto ? (
-        <button
-          onClick={() => setChatAberto(true)}
-          className="bg-yellow-500 text-black px-8 py-5 rounded-full shadow-[0_20px_60px_rgba(234,179,8,0.4)] hover:scale-105 active:scale-95 transition-all flex items-center gap-4 font-black text-[10px] tracking-[0.2em] uppercase"
-        >
-          <MessageSquare size={24} /> <span>Análise IA</span>
-        </button>
-      ) : (
-        <div className="w-[380px] md:w-[450px] h-[600px] bg-[#0c0c0c] border border-white/10 rounded-[3rem] shadow-[0_40px_100px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 border-b-yellow-500 border-b-[12px]">
-          
-          {/* Header */}
-          <div className="p-8 bg-yellow-500 text-black flex justify-between items-center">
-            <div className="flex items-center gap-4 font-black text-[10px] uppercase tracking-tighter italic">
-              <Bot size={22} /> <span>Vitta Analyst v5.0</span>
-            </div>
-            <button onClick={() => setChatAberto(false)} className="hover:bg-black/10 p-2 rounded-full transition-colors">
-              <Minus size={28} />
-            </button>
-          </div>
-
-          {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-[#0c0c0c] scrollbar-hide">
-            {mensagens.map((msg, idx) => (
-              <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[85%] p-6 rounded-[2.5rem] text-[13px] leading-relaxed shadow-2xl ${
-                  msg.role === "user" 
-                  ? "bg-yellow-500 text-black font-black rounded-tr-none" 
-                  : "bg-[#151515] text-gray-300 border border-white/5 rounded-tl-none border-l-4 border-l-yellow-500"
-                }`}>
-                  <div className="prose prose-invert prose-sm max-w-none prose-strong:text-yellow-500">
-                    <ReactMarkdown>{msg.parts[0].text}</ReactMarkdown>
-                  </div>
-                </div>
-              </div>
-            ))}
-            {enviando && (
-              <div className="flex items-center gap-2 text-[9px] text-yellow-500/50 animate-pulse font-black ml-4 tracking-widest uppercase italic">
-                <Sparkles size={12} /> Processando dados de mercado...
-              </div>
-            )}
-            <div ref={scrollRef} />
-          </div>
-
-          {/* Input Area */}
-          <div className="p-8 bg-[#080808] border-t border-white/5 flex gap-4">
-            <input
-              className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xs text-white outline-none focus:border-yellow-500/50 font-medium transition-all"
-              placeholder="Digite sua dúvida financeira..."
-              value={pergunta}
-              onChange={(e) => setPergunta(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && enviarMensagem()}
-            />
-            <button
-              onClick={enviarMensagem}
-              disabled={enviando}
-              className={`bg-yellow-500 text-black p-5 rounded-2xl transition-all shadow-xl ${
-                enviando ? "opacity-50 grayscale cursor-not-allowed" : "hover:bg-yellow-400 active:scale-90"
-              }`}
-            >
-              <Send size={22} />
-            </button>
-          </div>
+    <div className="flex flex-col h-full w-full bg-[#0d1117] overflow-hidden">
+      <div className="p-6 border-b border-slate-800 flex items-center gap-3 bg-[#0d1117] shrink-0">
+        <div className="bg-[#00f2aa]/10 p-2 rounded-lg">
+          <Bot size={20} className="text-[#00f2aa]" />
         </div>
-      )}
-      <style>{`.scrollbar-hide::-webkit-scrollbar { display: none; }`}</style>
+        <div>
+          <h4 className="text-white font-bold text-sm">Assistente IA</h4>
+          <p className="text-slate-500 text-[10px]">Análise via LangChain NLP</p>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
+        {mensagens.map((msg, i) => (
+          <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+            <div className={`p-2 rounded-lg h-fit shrink-0 ${msg.role === 'user' ? 'bg-blue-600' : 'bg-[#00f2aa]/20'}`}>
+              {msg.role === 'user' ? <User size={14} className="text-white" /> : <Bot size={14} className="text-[#00f2aa]" />}
+            </div>
+            <div className={`max-w-[85%] p-4 rounded-2xl text-xs leading-relaxed ${
+              msg.role === 'user' ? 'bg-[#1e293b] text-white' : 'bg-[#161b22] text-slate-300'
+            }`}>
+              <ReactMarkdown>{msg.text}</ReactMarkdown>
+            </div>
+          </div>
+        ))}
+        <div ref={scrollRef} />
+      </div>
+
+      <div className="p-6 bg-[#0d1117] border-t border-slate-800 shrink-0">
+        <div className="bg-[#161b22] border border-slate-800 rounded-xl flex items-center px-4 focus-within:border-[#00f2aa]/50 transition-all">
+          <input 
+            className="flex-1 bg-transparent py-3 text-xs text-white outline-none placeholder:text-slate-600"
+            placeholder="Interagir com IA..."
+            value={pergunta}
+            onChange={(e) => setPergunta(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && enviarMensagem()}
+          />
+          <button onClick={enviarMensagem} disabled={enviando} className="text-[#00f2aa] hover:scale-110 transition-transform">
+            <Send size={18} />
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

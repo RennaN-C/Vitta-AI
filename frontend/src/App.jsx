@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
-import ChatBot from "./components/ChatBot";
 import Login from "./components/Login";
 
 function App() {
@@ -31,7 +30,7 @@ function App() {
   }
 
   return (
-    <div className="flex h-screen bg-black text-white selection:bg-yellow-500/30">
+    <div className="flex h-screen bg-[#0d1117] text-white">
       <Sidebar 
         usuario={usuario}
         setTelaAtiva={setTelaAtiva} 
@@ -39,15 +38,12 @@ function App() {
         onLogout={handleLogout} 
       />
       
-      <main className="flex-1 flex flex-col relative overflow-hidden">
-        <Dashboard 
-          usuario={usuario}
-          telaAtiva={telaAtiva} 
-          setTelaAtiva={setTelaAtiva} 
-        />
-      </main>
-
-      <ChatBot />
+      {}
+      <Dashboard 
+        usuario={usuario}
+        telaAtiva={telaAtiva} 
+        setTelaAtiva={setTelaAtiva} 
+      />
     </div>
   );
 }
