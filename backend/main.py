@@ -3,8 +3,6 @@ import yfinance as yf
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from deep_translator import GoogleTranslator
-
-# Importações dos nossos novos módulos
 from database import database
 import auth
 import chatbot

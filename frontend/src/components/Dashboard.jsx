@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import PortfolioChart from "./PortfolioChart";
 import ChatBot from "./ChatBot";
+import Comparador from "./Comparador"; 
 
 const API_URL = "http://localhost:8000";
 
@@ -29,12 +30,6 @@ const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
     year: 'numeric'
   });
 
-  /**
-   * INTEGRAÇÃO BACKEND & LANGCHAIN:
-   * Esta função dispara uma requisição ao FastAPI que utiliza LangChain 
-   * para processar dados brutos do Yahoo Finance e transformá-los em 
-   * um resumo textual inteligente (NLP) para o investidor.
-   */
   const buscarAcao = async (ticker) => {
     const alvo = ticker || busca;
     if (!alvo) return;
@@ -54,7 +49,8 @@ const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
   };
 
   return (
-    <div className="flex-1 bg-[#0d1117] flex flex-col h-screen overflow-hidden">
+    <div className="flex-1 bg-[#0d1117] flex flex-col h-screen overflow-hidden text-white">
+      {/* HEADER */}
       <header className="flex items-center justify-between px-10 py-4 border-b border-slate-800 bg-[#0d1117] shrink-0">
         <div className="relative w-96 group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#00f2aa]" size={18} />
@@ -80,6 +76,7 @@ const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
       <main className="flex flex-1 overflow-hidden">
         <div className="flex-1 overflow-y-auto p-10 space-y-8 scrollbar-hide">
           
+          {/* TELA HOME */}
           {telaAtiva === "home" && (
             <div className="space-y-8 animate-in fade-in duration-500">
               <div>
@@ -136,6 +133,7 @@ const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
             </div>
           )}
 
+          {/* TELA ANALISAR AÇÕES */}
           {telaAtiva === "analisar" && (
             <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-500 pb-10">
                <header>
@@ -171,10 +169,6 @@ const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
                       <PortfolioChart />
                     </div>
 
-                    {/** * EXIBIÇÃO DO INSIGHT IA:
-                     * O conteúdo abaixo é gerado via LangChain Prompt Engineering, 
-                     * onde o modelo LLM interpreta as métricas financeiras.
-                     */}
                     <div className="bg-gradient-to-br from-[#00f2aa]/10 to-transparent border border-[#00f2aa]/20 p-8 rounded-[2.5rem] flex gap-6">
                        <Sparkles className="text-[#00f2aa] shrink-0" size={28} />
                        <div>
@@ -186,8 +180,12 @@ const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
                )}
             </div>
           )}
+
+          {/* TELA COMPARADOR */}
+          {telaAtiva === "comparador" && <Comparador />}
         </div>
 
+        {/* CHATBOT LADO DIREITO */}
         {telaAtiva === "analisar" && (
           <div className="w-[420px] border-l border-slate-800 bg-[#0d1117] h-full flex flex-col shrink-0 overflow-hidden">
             <ChatBot isFixed={true} tickerAtivo={resultadoAcao?.ticker} />

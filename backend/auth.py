@@ -15,11 +15,11 @@ async def login(dados: UserLogin):
     user = await database.fetch_one(query=query, values={"email": dados.email, "senha": dados.senha})
     
     if user:
-        # Retornamos o objeto 'usuario' para o React ler corretamente
+       
         return {
             "status": "success",
             "usuario": {
-                "id": str(user["id"]), # UUID convertido para String
+                "id": str(user["id"]), 
                 "nome": user["name"],
                 "email": user["email"],
                 "empresa": "Pormade Portas"
