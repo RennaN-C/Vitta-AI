@@ -1,20 +1,29 @@
 import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const data = [
-  { time: 'Jan', value: 30 },
-  { time: 'Fev', value: 34.2 },
-  { time: 'Mar', value: 33 },
-  { time: 'Abr', value: 38 },
-  { time: 'Mai', value: 40 },
-  { time: 'Jun', value: 38.45 },
-];
+const PortfolioChart = ({ dados }) => {
 
-const PortfolioChart = () => {
+  const defaultData = [
+    { data: 'Jan', preco: 30 },
+    { data: 'Fev', preco: 34.2 },
+    { data: 'Mar', preco: 33 },
+    { data: 'Abr', preco: 38 },
+    { data: 'Mai', preco: 40 },
+    { data: 'Jun', preco: 38.45 },
+  ];
+
+ 
+  const chartData = dados && dados.length > 0 ? dados : defaultData;
+
+
+  const isHistory = chartData[0]?.preco !== undefined;
+  const xKey = isHistory ? "data" : "name";
+  const yKey = isHistory ? "preco" : "value";
+
   return (
-    <div className="h-[300px] w-full">
+    <div className="h-[300px] w-full" style={{ minWidth: 0 }}>
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data}>
+        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#00f2aa" stopOpacity={0.3}/>
@@ -22,33 +31,40 @@ const PortfolioChart = () => {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" opacity={0.3} />
+          
           <XAxis 
-            dataKey="time" 
+            dataKey={xKey} 
             axisLine={false} 
             tickLine={false} 
             tick={{fill: '#64748b', fontSize: 10}}
             dy={10}
+            minTickGap={20}
           />
+          
           <YAxis 
             axisLine={false} 
             tickLine={false} 
             tick={{fill: '#64748b', fontSize: 10}}
-            domain={[0, 40]}
+            domain={['auto', 'auto']} 
           />
+          
           <Tooltip 
             contentStyle={{ backgroundColor: '#161b22', border: '1px solid #1e293b', borderRadius: '12px' }}
             itemStyle={{ color: '#00f2aa', fontWeight: 'bold' }}
             cursor={{ stroke: '#1e293b', strokeWidth: 2 }}
+            formatter={(value) => [`R$ ${Number(value).toFixed(2)}`, isHistory ? 'Preço' : 'Valor']}
           />
+          
           <Area 
             type="monotone" 
-            dataKey="value" 
+            dataKey={yKey} 
             stroke="#00f2aa" 
             strokeWidth={3}
             fillOpacity={1} 
             fill="url(#colorValue)" 
             dot={{ fill: '#00f2aa', strokeWidth: 2, r: 4, stroke: '#0d1117' }}
             activeDot={{ r: 6, strokeWidth: 0 }}
+            animationDuration={1200}
           />
         </AreaChart>
       </ResponsiveContainer>
