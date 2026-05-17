@@ -8,6 +8,7 @@ import {
 import PortfolioChart from "./PortfolioChart";
 import ChatBot from "./ChatBot";
 import Comparador from "./Comparador"; 
+import Profile from "./Profile"; 
 
 const API_URL = "http://localhost:8000";
 
