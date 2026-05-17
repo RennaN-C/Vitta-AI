@@ -44,7 +44,6 @@ const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
     year: "numeric",
   });
 
-  
   useEffect(() => {
     const carregarDadosDashboard = async () => {
       try {
@@ -236,7 +235,6 @@ const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
                         <PieChart size={18} className="text-[#00f2aa]" />
                       </div>
 
-                      {}
                       <div
                         className="w-full h-64 block"
                         style={{ minWidth: 0 }}
@@ -383,6 +381,9 @@ const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
 
           {/* TELA COMPARADOR */}
           {telaAtiva === "comparador" && <Comparador />}
+
+          {/* ADIÇÃO: TELA DO PROFILE */}
+          {telaAtiva === "perfil" && <Profile usuario={usuario} />}
         </div>
 
         {/* CHATBOT LADO DIREITO */}
