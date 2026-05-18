@@ -1,0 +1,4 @@
+package-lock.json linguist-generated=true
+*.min.js linguist-generated=true
+dist/** linguist-generated=true
+build/** linguist-generated=true
