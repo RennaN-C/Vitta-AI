@@ -1,5 +1,9 @@
-# Ignorar arquivos de pacotes e builds automáticos nas estatísticas de linguagem
+node_modules/** linguist-vendor=true
+dist/** linguist-vendor=true
+build/** linguist-vendor=true
+public/** linguist-vendor=true
 package-lock.json linguist-generated=true
-*.min.js linguist-generated=true
-dist/** linguist-generated=true
-build/** linguist-generated=true
+yarn.lock linguist-generated=true
+*.js linguist-detectable=true
+*.jsx linguist-detectable=true
+*.py linguist-detectable=true
