@@ -13,6 +13,8 @@ import {
   ChevronRight,
   BarChart3,
   PieChart,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import PortfolioChart from "./PortfolioChart";
 import ChatBot from "./ChatBot";
@@ -26,9 +28,12 @@ const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
   const [resultadoAcao, setResultadoAcao] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // NOVOS ESTADOS: Controlam o consumo de dados reais na Home
+ 
   const [dadosHome, setDadosHome] = useState(null);
   const [loadingHome, setLoadingHome] = useState(true);
+
+
+  const [ocultarPatrimonio, setOcultarPatrimonio] = useState(false);
 
   const obterSaudacao = () => {
     const hora = new Date().getHours();
@@ -54,7 +59,7 @@ const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
       } catch (err) {
         console.error("Erro ao sincronizar painel principal:", err);
       } finally {
-        setLoadingHome(false);
+        loadingHome && setLoadingHome(false);
       }
     };
 
@@ -79,6 +84,15 @@ const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // FUNÇÃO AUXILIAR: Mascara os valores confidenciais se o modo privado estiver ativo
+  const mascararValor = (valor) => {
+    if (ocultarPatrimonio) return "••••••";
+    return valor?.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }) || "0,00";
   };
 
   return (
@@ -132,11 +146,33 @@ const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
                     {dataHoje}
                   </p>
                 </div>
-                <div className="bg-[#00f2aa]/10 border border-[#00f2aa]/20 px-4 py-2 rounded-xl flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-[#00f2aa] animate-pulse"></div>
-                  <span className="text-[#00f2aa] text-xs font-bold tracking-wide uppercase">
-                    Modo Pro Ativo
-                  </span>
+                
+                <div className="flex items-center gap-3">
+                  {/* BOTÃO DE PRIVACIDADE / MODO OCULTO */}
+                  <button
+                    onClick={() => setOcultarPatrimonio(!ocultarPatrimonio)}
+                    className="flex items-center gap-2 bg-[#161b22] hover:bg-[#1f2631] border border-slate-800 px-4 py-2 rounded-xl text-xs font-bold tracking-wide transition-all duration-200 text-slate-300"
+                    title={ocultarPatrimonio ? "Exibir saldos" : "Ocultar saldos do painel"}
+                  >
+                    {ocultarPatrimonio ? (
+                      <>
+                        <Eye size={16} className="text-[#00f2aa]" />
+                        <span>MOSTRAR SALDO</span>
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff size={16} className="text-slate-500" />
+                        <span>MODO PRIVADO</span>
+                      </>
+                    )}
+                  </button>
+
+                  <div className="bg-[#00f2aa]/10 border border-[#00f2aa]/20 px-4 py-2 rounded-xl flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-[#00f2aa] animate-pulse"></div>
+                    <span className="text-[#00f2aa] text-xs font-bold tracking-wide uppercase">
+                      Modo Pro Ativo
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -149,23 +185,17 @@ const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
                 <>
                   {/* GRID DE CARDS DINÂMICOS */}
                   <div className="grid grid-cols-3 gap-6">
-                    {/* CARD 1: PATRIMÔNIO REAL DO BACKEND */}
+                    {/* CARD 1: PATRIMÔNIO REAL DO BACKEND TRATADO COM PRIVACIDADE */}
                     <div className="bg-[#00f2aa] p-8 rounded-[2.5rem] shadow-xl shadow-[#00f2aa]/5 flex flex-col justify-between h-48 relative overflow-hidden group">
                       <div className="z-10">
                         <p className="text-[#0d1117] font-bold text-[10px] uppercase tracking-widest mb-1 opacity-70">
                           Patrimônio Líquido
                         </p>
                         <h3 className="text-[#0d1117] text-4xl font-black tracking-tighter">
-                          R${" "}
-                          {dadosHome?.patrimonioTotal.toLocaleString("pt-BR", {
-                            minimumFractionDigits: 2,
-                          })}
+                          R$ {mascararValor(dadosHome?.patrimonioTotal)}
                         </h3>
                         <p className="text-[#0d1117] text-xs mt-4 font-bold flex items-center gap-1 bg-[#0d1117]/10 w-fit px-3 py-1 rounded-full">
-                          Caixa Livre: R${" "}
-                          {dadosHome?.saldoCaixa.toLocaleString("pt-BR", {
-                            minimumFractionDigits: 2,
-                          })}
+                          Caixa Livre: R$ {mascararValor(dadosHome?.saldoCaixa)}
                         </p>
                       </div>
                       <BarChart3
@@ -240,7 +270,10 @@ const Dashboard = ({ telaAtiva, setTelaAtiva, usuario }) => {
                         style={{ minWidth: 0 }}
                       >
                         {dadosHome && dadosHome.distribuicao ? (
-                          <PortfolioChart dados={dadosHome.distribuicao} />
+                          <PortfolioChart 
+                            dados={dadosHome.distribuicao} 
+                            ocultarPatrimonio={ocultarPatrimonio}
+                          />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-slate-600 text-xs italic">
                             Aguardando dimensões do contêiner...

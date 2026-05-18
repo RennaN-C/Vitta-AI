@@ -1,7 +1,8 @@
 import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { EyeOff } from 'lucide-react';
 
-const PortfolioChart = ({ dados }) => {
+const PortfolioChart = ({ dados, ocultarPatrimonio }) => {
 
   const defaultData = [
     { data: 'Jan', preco: 30 },
@@ -12,16 +13,27 @@ const PortfolioChart = ({ dados }) => {
     { data: 'Jun', preco: 38.45 },
   ];
 
- 
   const chartData = dados && dados.length > 0 ? dados : defaultData;
-
 
   const isHistory = chartData[0]?.preco !== undefined;
   const xKey = isHistory ? "data" : "name";
   const yKey = isHistory ? "preco" : "value";
 
+  // INTERFACE ALTERNATIVA: Se o modo privado estiver ativo, oculta os dados sensíveis do gráfico
+  if (ocultarPatrimonio) {
+    return (
+      <div className="h-[300px] w-full flex flex-col items-center justify-center text-slate-500 text-xs font-semibold tracking-wide bg-[#0d1117]/40 border border-dashed border-slate-800 rounded-[1.5rem] p-6 animate-in fade-in duration-300">
+        <EyeOff size={24} className="text-slate-600 mb-2 animate-pulse" />
+        <span className="uppercase text-[10px] tracking-widest text-slate-600 mb-1">Dados Protegidos</span>
+        <p className="text-slate-500 font-medium text-center normal-case">
+          Gráfico e oscilações ocultados no Modo Privado.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="h-[300px] w-full" style={{ minWidth: 0 }}>
+    <div className="h-[300px] w-full animate-in fade-in duration-300" style={{ minWidth: 0 }}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <defs>
