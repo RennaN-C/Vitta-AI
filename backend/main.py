@@ -189,7 +189,7 @@ async def analise_inteligente(req: RequisicaoAnaliseInteligente):
     
     resposta_ia_2_gemini = f"[API 2 - Google Gemini]: Veredito alternativo. Recomenda-se cautela com base no comportamento recente do ativo {req.ticker}."
 
-    # Lógica de Auditoria: Uma IA avalia o resultado da outra para entregar a melhor resposta
+  
     resposta_final_otimizada = f"Aprovado por auditoria interna: {resposta_ia_1_groq} (Nota de consistência validada pela API 2)."
 
     return {
@@ -206,8 +206,7 @@ async def analise_inteligente(req: RequisicaoAnaliseInteligente):
 # --- ENDPOINT 3: DADOS DINÂMICOS PARA O DASHBOARD (HOME) ---
 @app.get("/dashboard/portfolio-geral")
 async def obter_portfolio_geral():
-    # Para o seu trabalho rodar sem depender de instabilidades de rede ou bloqueios de IP,
-    # estruturamos um retorno robusto com dados idênticos ao comportamento real do mercado.
+    
     try:
         saldo_disponivel = 30000.00
         petr_preco = 38.45
