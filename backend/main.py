@@ -6,8 +6,6 @@ from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from deep_translator import GoogleTranslator
-
-# Módulos base do projeto
 from database import database
 import auth
 import chatbot
@@ -22,7 +20,6 @@ app.add_middleware(
 )
 
 # --- CONSTANTES DE ENGENHARIA DE PROMPTS ---
-# Definição dos papéis/personas solicitados no escopo do trabalho
 PERSONAS = {
     "tecnico": "Você é um analista quantitativo sênior. Foque em métricas puras, volatilidade, juros e dados estatísticos. Seja direto e matemático.",
     "resumido": "Você é um sumariador executivo de mercado. Redija sua análise em no máximo 3 frases extremamente objetivas.",
@@ -31,7 +28,7 @@ PERSONAS = {
     "suporte": "Você é o assistente de suporte técnico do Vitta AI. Explique ao usuário como interpretar o sistema e os dados na tela."
 }
 
-# --- LISTA NEGRA DE SEGURANÇA (ANTI-PROMPT INJECTION & EXPLOITS) ---
+# --- LISTA NEGRA DE SEGURANÇA ) ---
 TERMOS_BLOQUEADOS = [
     "ignore as instruções", "ignore instructions", "jailbreak", "mude suas regras",
     "acting as", "delete", "drop table", "sudo", "rebele-se", "prompt de comando"
@@ -40,8 +37,8 @@ TERMOS_BLOQUEADOS = [
 # --- MODELOS DE DADOS PARA REQUISIÇÃO (PYDANTIC) ---
 class RequisicaoAnaliseInteligente(BaseModel):
     ticker: str
-    modo_persona: str = "tecnico"  # tecnico, resumido, professor, detalhado, suporte
-    tipo_prompt: str = "estruturado"  # simples, estruturado, especializado
+    modo_persona: str = "tecnico"  
+    tipo_prompt: str = "estruturado"  
     mensagem_usuario: str = ""
 
 # --- EVENTOS DE CICLO DE VIDA ---
@@ -82,7 +79,7 @@ async def analisar_acao(ticker: str):
     try:
         simbolo = ticker.upper().strip()
         
-        # Correção da lógica de sufixo: só adiciona .SA se o ticker terminar com número (padrão brasileiro)
+        # Correção da lógica de sufixo: só adiciona .SA se o ticker terminar com número 
         # E se não for uma criptomoeda reconhecida
         if not simbolo.endswith(".SA"):
             # Verifica se o último caractere é um dígito (ex: PETR4, ITUB11)
@@ -99,7 +96,7 @@ async def analisar_acao(ticker: str):
         fechamento_anterior = info.get('regularMarketPreviousClose', preco_atual)
         variacao = ((preco_atual - fechamento_anterior) / fechamento_anterior) * 100
 
-        # Coleta de histórico dos últimos 6 meses para suprir o Recharts com dados reais
+        #
         historico_df = acao.history(period="6mo")
         historico_formatado = []
         for index, row in historico_df.iterrows():
@@ -124,7 +121,7 @@ async def analisar_acao(ticker: str):
             "dividendYield": round((info.get('dividendYield', 0) * 100), 2) if info.get('dividendYield') else 0,
             "volume": info.get('regularMarketVolume', 0),
             "resumo": resumo_pt,
-            "historico": historico_formatado # Inserido para o CompareChart e PortfolioChart funcionarem perfeitamente!
+            "historico": historico_formatado 
         }
     except Exception as e:
         print(f"❌ Erro na análise: {e}")
@@ -134,7 +131,6 @@ async def analisar_acao(ticker: str):
 @app.post("/analise-inteligente")
 async def analise_inteligente(req: RequisicaoAnaliseInteligente):
     """
-    MÓDULO EXCLUSIVO PARA O TRABALHO ACADÊMICO:
     Aplica Engenharia de Prompts (Persona + Níveis), executa camadas de segurança (Guardrails)
     e simula o roteamento e comparação entre duas APIs de Inteligência Artificial distintas.
     """
