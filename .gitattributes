@@ -1,3 +1,4 @@
+# Ignorar arquivos de pacotes e builds automáticos nas estatísticas de linguagem
 package-lock.json linguist-generated=true
 *.min.js linguist-generated=true
 dist/** linguist-generated=true
