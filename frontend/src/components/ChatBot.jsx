@@ -1,95 +1,26 @@
-import React, { useState, useRef, useEffect } from "react";
-import axios from "axios";
+import { useEffect, useRef, useState } from "react";
+import { Bot, Send, User } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { Send, Bot, User } from "lucide-react";
+import api from "../api";
 
-const API_URL = "http://localhost:8000";
-
-const ChatBot = ({ isFixed = false, tickerAtivo = "" }) => {
+const ChatBot = ({ tickerAtivo = "" }) => {
   const [pergunta, setPergunta] = useState("");
   const [enviando, setEnviando] = useState(false);
-  const [mensagens, setMensagens] = useState([
-    { role: "model", text: `Analisando **${tickerAtivo || 'o mercado'}**...` }
-  ]);
-
+  const [mensagens, setMensagens] = useState([{ role: "model", text: `Analisando **${tickerAtivo || "o mercado"}**...` }]);
   const scrollRef = useRef(null);
-  useEffect(() => { scrollRef.current?.scrollIntoView({ behavior: "smooth" }); }, [mensagens]);
-
-  /**
-   * PROCESSO DE CONVERSAÇÃO (LANGCHAIN):
-   * Envia o histórico de mensagens e o ID do usuário para o backend.
-   * O LangChain utiliza Memory (ConversationBufferWindowMemory) para manter 
-   * o contexto do diálogo e RAG (se implementado) para consultar dados externos.
-   */
+  useEffect(() => scrollRef.current?.scrollIntoView({ behavior: "smooth" }), [mensagens]);
   const enviarMensagem = async () => {
     if (!pergunta.trim() || enviando) return;
-
-    const usuarioStored = localStorage.getItem("vitta_user");
-    const user = usuarioStored ? JSON.parse(usuarioStored) : null;
-
-    const msgUser = pergunta;
-    setPergunta("");
-    setMensagens(prev => [...prev, { role: "user", text: msgUser }]);
-    setEnviando(true);
-
+    const texto = pergunta;
+    setPergunta(""); setMensagens((prev) => [...prev, { role: "user", text: texto }]); setEnviando(true);
     try {
-      // POST para endpoint do LangChain que gerencia o fluxo de pensamento da IA
-      const res = await axios.post(`${API_URL}/chat`, { 
-        user_id: String(user?.id || "anonimo"), 
-        mensagem: tickerAtivo ? `Considere o ativo ${tickerAtivo}: ${msgUser}` : msgUser 
-      });
-      setMensagens(prev => [...prev, { role: "model", text: res.data.resposta }]);
-    } catch (err) {
-      setMensagens(prev => [...prev, { role: "model", text: "Erro na conexão com o LLM." }]);
-    } finally {
-      setEnviando(false);
-    }
+      const { data } = await api.post("/chat", { mensagem: tickerAtivo ? `Considere o ativo ${tickerAtivo}: ${texto}` : texto });
+      setMensagens((prev) => [...prev, { role: "model", text: data.resposta }]);
+    } catch {
+      setMensagens((prev) => [...prev, { role: "model", text: "Não foi possível consultar o assistente agora." }]);
+    } finally { setEnviando(false); }
   };
-
-  return (
-    <div className="flex flex-col h-full w-full bg-[#0d1117] overflow-hidden">
-      <div className="p-6 border-b border-slate-800 flex items-center gap-3 bg-[#0d1117] shrink-0">
-        <div className="bg-[#00f2aa]/10 p-2 rounded-lg">
-          <Bot size={20} className="text-[#00f2aa]" />
-        </div>
-        <div>
-          <h4 className="text-white font-bold text-sm">Assistente IA</h4>
-          <p className="text-slate-500 text-[10px]">Análise via LangChain NLP</p>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
-        {mensagens.map((msg, i) => (
-          <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-            <div className={`p-2 rounded-lg h-fit shrink-0 ${msg.role === 'user' ? 'bg-blue-600' : 'bg-[#00f2aa]/20'}`}>
-              {msg.role === 'user' ? <User size={14} className="text-white" /> : <Bot size={14} className="text-[#00f2aa]" />}
-            </div>
-            <div className={`max-w-[85%] p-4 rounded-2xl text-xs leading-relaxed ${
-              msg.role === 'user' ? 'bg-[#1e293b] text-white' : 'bg-[#161b22] text-slate-300'
-            }`}>
-              <ReactMarkdown>{msg.text}</ReactMarkdown>
-            </div>
-          </div>
-        ))}
-        <div ref={scrollRef} />
-      </div>
-
-      <div className="p-6 bg-[#0d1117] border-t border-slate-800 shrink-0">
-        <div className="bg-[#161b22] border border-slate-800 rounded-xl flex items-center px-4 focus-within:border-[#00f2aa]/50 transition-all">
-          <input 
-            className="flex-1 bg-transparent py-3 text-xs text-white outline-none placeholder:text-slate-600"
-            placeholder="Interagir com IA..."
-            value={pergunta}
-            onChange={(e) => setPergunta(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && enviarMensagem()}
-          />
-          <button onClick={enviarMensagem} disabled={enviando} className="text-[#00f2aa] hover:scale-110 transition-transform">
-            <Send size={18} />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  return <div className="flex h-full flex-col bg-[#0d1117]"><header className="flex gap-3 border-b border-slate-800 p-6"><Bot className="text-[#00f2aa]" /><div><strong className="text-sm">Assistente IA</strong><p className="text-[10px] text-slate-500">Análise auditada via LangChain</p></div></header><div className="flex-1 space-y-5 overflow-y-auto p-6">{mensagens.map((item, index) => <div key={`${item.role}-${index}`} className={`flex gap-2 ${item.role === "user" ? "flex-row-reverse" : ""}`}>{item.role === "user" ? <User size={16} /> : <Bot size={16} className="text-[#00f2aa]" />}<div className="max-w-[85%] rounded-xl bg-[#161b22] p-3 text-xs text-slate-300"><ReactMarkdown>{item.text}</ReactMarkdown></div></div>)}<div ref={scrollRef} /></div><div className="flex border-t border-slate-800 p-4"><input value={pergunta} onChange={(event) => setPergunta(event.target.value)} onKeyDown={(event) => event.key === "Enter" && enviarMensagem()} className="flex-1 rounded-l-xl bg-[#161b22] p-3 text-xs outline-none" placeholder="Interagir com IA..." /><button onClick={enviarMensagem} className="rounded-r-xl bg-[#161b22] px-3 text-[#00f2aa]"><Send size={18} /></button></div></div>;
 };
 
 export default ChatBot;

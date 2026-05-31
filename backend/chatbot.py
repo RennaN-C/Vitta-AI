@@ -1,5 +1,5 @@
 import os
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from dotenv import load_dotenv
 
 # Importação do ecossistema LangChain para padronizar o consumo de modelos através da camada do Groq.
@@ -11,6 +11,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from database import database
 from schemas import ChatMessage
+from auth import obter_usuario_atual
+from security import verificar_seguranca_prompt
 
 load_dotenv()
 
@@ -18,12 +20,15 @@ load_dotenv()
 router = APIRouter(prefix="/chat", tags=["IA"])
 
 @router.post("")
-async def chat_vitta(dados: ChatMessage):
+async def chat_vitta(dados: ChatMessage, user=Depends(obter_usuario_atual)):
     """
     Endpoint de chat em tempo real utilizando LangChain Expression Language (LCEL).
     Minha abordagem acadêmica: Criei uma topologia de Validação Cruzada (Cross-Validation)
     onde orquestro em cadeia dois modelos neurais concorrentes para mitigar alucinações.
     """
+    if not verificar_seguranca_prompt(dados.mensagem):
+        raise HTTPException(status_code=400, detail="Mensagem bloqueada pelas diretrizes de segurança.")
+
     groq_key = os.getenv("GROQ_API_KEY")
 
     if not groq_key:
@@ -104,7 +109,7 @@ async def chat_vitta(dados: ChatMessage):
             VALUES (:user_id, :msg, :resp)
         """
         await database.execute(query=query, values={
-            "user_id": dados.user_id,
+            "user_id": str(user["id"]),
             "msg": dados.mensagem,
             "resp": resposta_final_auditada
         })
